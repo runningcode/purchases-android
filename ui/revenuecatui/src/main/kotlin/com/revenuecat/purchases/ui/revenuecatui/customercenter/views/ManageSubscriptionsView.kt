@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.revenuecat.purchases.ExperimentalPreviewRevenueCatPurchasesAPI
 import com.revenuecat.purchases.Store
 import com.revenuecat.purchases.customercenter.CustomerCenterConfigData
@@ -59,7 +61,7 @@ internal fun ManageSubscriptionsView(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            purchaseInformation?.let { purchaseInformation ->
+            if (screen.type == CustomerCenterConfigData.Screen.ScreenType.MANAGEMENT && purchaseInformation != null) {
                 ActiveUserManagementView(
                     screen = screen,
                     localization = localization,
@@ -67,12 +69,14 @@ internal fun ManageSubscriptionsView(
                     support = support,
                     onAction = onAction,
                 )
-            } ?: NoActiveUserManagementView(
-                screen = screen,
-                onButtonPress = {
-                    onAction(CustomerCenterAction.PathButtonPressed(it, product = null))
-                },
-            )
+            } else {
+                NoActiveUserManagementView(
+                    screen = screen,
+                    onButtonPress = {
+                        onAction(CustomerCenterAction.PathButtonPressed(it, product = null))
+                    },
+                )
+            }
         }
     }
 }
@@ -87,41 +91,50 @@ private fun ActiveUserManagementView(
     onAction: (CustomerCenterAction) -> Unit,
 ) {
     Column {
-        Text(
-            text = screen.title,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(end = 16.dp, top = 32.dp),
-        )
-
-        screen.subtitle?.let { subtitle ->
-            Spacer(modifier = Modifier.size(4.dp))
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyLarge,
-            )
-        }
-        Spacer(modifier = Modifier.size(32.dp))
-
-        SubscriptionDetailsView(details = purchaseInformation, localization = localization)
-
-        Spacer(modifier = Modifier.size(32.dp))
-
-        Surface(
-            shape = MaterialTheme.shapes.medium,
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
         ) {
-            if (purchaseInformation.store == Store.PLAY_STORE) {
-                ManageSubscriptionsButtonsView(screen = screen, onButtonPress = {
-                    onAction(CustomerCenterAction.PathButtonPressed(it, purchaseInformation.product))
-                })
-            } else {
-                OtherPlatformSubscriptionButtonsView(
-                    localization = localization,
-                    support = support,
-                    managementURL = purchaseInformation.managementURL,
-                    onAction = onAction,
+            Text(
+                text = screen.title,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(end = 16.dp, top = 32.dp),
+            )
+
+            screen.subtitle?.let { subtitle ->
+                Spacer(modifier = Modifier.size(4.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
+
+            Spacer(modifier = Modifier.size(32.dp))
+
+            SubscriptionDetailsView(details = purchaseInformation, localization = localization)
         }
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        HorizontalDivider()
+
+//        Spacer(modifier = Modifier.size(32.dp))
+
+//        Surface(
+//            shape = MaterialTheme.shapes.medium,
+//        ) {
+        if (purchaseInformation.store == Store.PLAY_STORE) {
+            ManageSubscriptionsButtonsView(screen = screen, onButtonPress = {
+                onAction(CustomerCenterAction.PathButtonPressed(it, purchaseInformation.product))
+            })
+        } else {
+            OtherPlatformSubscriptionButtonsView(
+                localization = localization,
+                support = support,
+                managementURL = purchaseInformation.managementURL,
+                onAction = onAction,
+            )
+        }
+//        }
     }
 }
 
@@ -131,18 +144,41 @@ private fun NoActiveUserManagementView(
     screen: CustomerCenterConfigData.Screen,
     onButtonPress: (CustomerCenterConfigData.HelpPath) -> Unit,
 ) {
-    Column {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         CompatibilityContentUnavailableView(
             title = screen.title,
             drawableResId = R.drawable.warning,
             description = screen.subtitle,
         )
 
-        ManageSubscriptionsButtonsView(
-            screen = screen,
-            onButtonPress = onButtonPress,
-            useOutlinedButton = true,
-        )
+        Spacer(modifier = Modifier.size(32.dp))
+
+        if (screen.supportedPaths.size == 1) {
+            val buttonModifier = Modifier
+//                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+
+            val path = screen.supportedPaths[0]
+            OutlinedButton(
+                onClick = { onButtonPress(path) },
+                modifier = buttonModifier,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+            ) {
+                Text(
+                    text = path.title,
+                    modifier = Modifier,
+                    textAlign = TextAlign.Start,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+        } else {
+            ManageSubscriptionsButtonsView(
+                screen = screen,
+                onButtonPress = onButtonPress,
+            )
+        }
     }
 }
 
@@ -153,34 +189,39 @@ fun CompatibilityContentUnavailableView(
     description: String?,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Surface(
+        shape = MaterialTheme.shapes.medium,
     ) {
-        Image(
-            painter = painterResource(id = drawableResId),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
-            modifier = Modifier
-                .size(48.dp)
-                .padding(bottom = 8.dp),
-        )
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Image(
+                painter = painterResource(id = drawableResId),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)),
+                modifier = Modifier
+                    .size(56.dp),
+            )
 
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
-
-        description?.let {
             Text(
-                text = it,
-                style = MaterialTheme.typography.bodyLarge,
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 8.dp),
             )
+
+            description?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 16.dp, top = 16.dp),
+                )
+            }
         }
     }
 }
@@ -287,12 +328,16 @@ private fun ManageSubscriptionButton(
         onClick = { onButtonPress(path) },
         useOutlinedButton = useOutlinedButton,
         buttonContent = { modifier ->
-            Text(
-                text = path.title,
-                modifier = modifier,
-                textAlign = TextAlign.Start,
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            Column {
+                Text(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    text = path.title,
+                    modifier = modifier,
+                    textAlign = TextAlign.Start,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         },
     )
 }

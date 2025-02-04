@@ -8,18 +8,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
@@ -46,69 +43,72 @@ internal fun SubscriptionDetailsView(
     localization: CustomerCenterConfigData.Localization,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
+//    Surface(
+//        modifier = modifier,
+//        shape = MaterialTheme.shapes.medium,
+//    ) {
+    Column(
+//            modifier = Modifier
+//                .padding(all = PaddingContent),
     ) {
-        Column(
-            modifier = Modifier
-                .padding(all = PaddingContent),
-        ) {
-            details.title?.let {
+        details.title?.let {
+            Column(
+                modifier = Modifier.height(60.dp),
+            ) {
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                 )
-            }
+                val explanation = remember { getSubscriptionExplanation(details, localization) }
 
-            val explanation = remember { getSubscriptionExplanation(details, localization) }
-
-            Text(
-                text = explanation,
-                color = LocalContentColor.current.copy(alpha = AlphaSecondaryText),
-                style = MaterialTheme.typography.bodySmall,
-            )
-
-            Spacer(modifier = Modifier.size(PaddingVertical))
-
-            HorizontalDivider()
-
-            details.durationTitle?.let {
-                Spacer(modifier = Modifier.size(PaddingVertical))
-
-                SubscriptionDetailRow(
-                    icon = CurrencyExchange,
-                    overline = localization.commonLocalizedString(CommonLocalizedString.BILLING_CYCLE),
-                    text = it,
-                )
-            }
-
-            Spacer(modifier = Modifier.size(PaddingVertical))
-
-            val price = remember { getPrice(details, localization) }
-
-            price?.let {
-                SubscriptionDetailRow(
-                    icon = UniversalCurrencyAlt,
-                    overline = localization.commonLocalizedString(CommonLocalizedString.CURRENT_PRICE),
-                    text = it,
-                )
-            }
-
-            details.expirationOrRenewal?.let { expirationOrRenewal ->
-                val expirationValue = remember { getExpirationValue(expirationOrRenewal, localization) }
-                val expirationOverline = remember { labelForExpirationOrRenewal(expirationOrRenewal, localization) }
-
-                Spacer(modifier = Modifier.size(PaddingVertical))
-
-                SubscriptionDetailRow(
-                    icon = CalendarMonth,
-                    overline = expirationOverline,
-                    text = expirationValue,
+                Text(
+                    text = explanation,
+//                color = LocalContentColor.current.copy(alpha = AlphaSecondaryText),
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
+
+//            Spacer(modifier = Modifier.size(PaddingVertical))
+
+//            HorizontalDivider()
+
+        details.durationTitle?.let {
+//                Spacer(modifier = Modifier.size(PaddingVertical))
+
+            SubscriptionDetailRow(
+                icon = CurrencyExchange,
+                overline = localization.commonLocalizedString(CommonLocalizedString.BILLING_CYCLE),
+                text = it,
+            )
+        }
+
+        Spacer(modifier = Modifier.size(PaddingVertical))
+
+        val price = remember { getPrice(details, localization) }
+
+        price?.let {
+            SubscriptionDetailRow(
+                icon = UniversalCurrencyAlt,
+                overline = localization.commonLocalizedString(CommonLocalizedString.CURRENT_PRICE),
+                text = it,
+            )
+        }
+
+        details.expirationOrRenewal?.let { expirationOrRenewal ->
+            val expirationValue = remember { getExpirationValue(expirationOrRenewal, localization) }
+            val expirationOverline = remember { labelForExpirationOrRenewal(expirationOrRenewal, localization) }
+
+            Spacer(modifier = Modifier.size(PaddingVertical))
+
+            SubscriptionDetailRow(
+                icon = CalendarMonth,
+                overline = expirationOverline,
+                text = expirationValue,
+            )
+        }
     }
+//    }
 }
 
 @OptIn(ExperimentalPreviewRevenueCatPurchasesAPI::class)
@@ -178,30 +178,70 @@ private fun SubscriptionDetailRow(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .padding(vertical = 8.dp)
+            .wrapContentWidth(),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size((LocalDensity.current.fontScale * SizeIconDp).dp),
+            modifier = Modifier.size(24.dp),
+//            tint = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.size(PaddingHorizontal))
+//        Spacer(modifier = Modifier.size(PaddingHorizontal))
 
-        Column {
+        Column(
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier.padding(start = 16.dp),
+        ) {
             Text(
                 text = overline,
-                color = LocalContentColor.current.copy(alpha = AlphaSecondaryText),
-                style = MaterialTheme.typography.labelSmall,
+//                color = LocalContentColor.current.copy(alpha = AlphaSecondaryText),
+                style = MaterialTheme.typography.bodyLarge,
             )
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
             )
         }
     }
 }
+//
+// @Composable
+// private fun SubscriptionDetailRow(
+//    icon: ImageVector,
+//    overline: String,
+//    text: String,
+//    modifier: Modifier = Modifier,
+// ) {
+//    Row(
+//        modifier = modifier,
+//        verticalAlignment = Alignment.CenterVertically,
+//    ) {
+//        Icon(
+//            imageVector = icon,
+//            contentDescription = null,
+//            modifier = Modifier.size((LocalDensity.current.fontScale * SizeIconDp).dp),
+//        )
+//
+//        Spacer(modifier = Modifier.size(PaddingHorizontal))
+//
+//        Column {
+//            Text(
+//                text = overline,
+//                color = LocalContentColor.current.copy(alpha = AlphaSecondaryText),
+//                style = MaterialTheme.typography.labelSmall,
+//            )
+//            Text(
+//                text = text,
+//                style = MaterialTheme.typography.bodyMedium,
+//            )
+//        }
+//    }
+// }
 
 private const val AlphaSecondaryText = 0.6f
 private val PaddingContent = 16.dp
