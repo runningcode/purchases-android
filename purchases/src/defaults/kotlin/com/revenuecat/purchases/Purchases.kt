@@ -989,4 +989,23 @@ class Purchases internal constructor(
     }
 
     // endregion
+
+    /**
+     * Sets the handler for Customer Center events.
+     * This should be set at the Application level and used for analytics and logging purposes, not for UI updates.
+     *
+     * @param handler The handler for Customer Center events. Set to null to remove.
+     */
+    @JvmSynthetic
+    internal fun setCustomerCenterEventHandler(handler: CustomerCenterEventHandler?) {
+        purchasesOrchestrator.setCustomerCenterEventHandler(handler)
+    }
+
+    /**
+     * Gets the current Customer Center event handler.
+     */
+    @JvmSynthetic
+    internal fun getCustomerCenterEventHandler(): CustomerCenterEventHandler? {
+        return purchasesOrchestrator.getCustomerCenterEventHandler()
+    }
 }
